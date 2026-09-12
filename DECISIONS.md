@@ -55,17 +55,9 @@ Rationale:
 
 Status: CONFIRMED
 
-REST/SSE under the FastAPI control plane is the canonical application contract.
+REST/SSE under the FastAPI control plane is the canonical application contract after the relevant product slice has been accepted.
 
 The browser GUI, `sapctl` CLI, curl/automation and bounded AI test clients must all use the same API and security/policy path. No client may bypass authorization by reading the database directly or duplicating business logic.
-
-Implementation order is:
-
-```text
-API first
-  -> CLI
-  -> GUI
-```
 
 A user-facing capability is not considered complete when it exists only in the CLI or only in the GUI.
 
@@ -73,7 +65,7 @@ A user-facing capability is not considered complete when it exists only in the C
 
 Status: CONFIRMED
 
-The first browser UI will be server-rendered or use lightweight JavaScript/HTMX unless a verified product requirement justifies a separate SPA.
+The first implemented browser UI will be server-rendered or use lightweight JavaScript/HTMX unless a verified product requirement justifies a separate SPA.
 
 The portfolio focus is Backend, Agent Architecture, Security, Observability and Operations rather than frontend framework complexity.
 
@@ -84,3 +76,42 @@ Status: CONFIRMED
 Normal tests for this public repository run on GitHub-hosted CI. Untrusted public pull-request code must not automatically execute on the Synology self-hosted runner.
 
 NAS deployment/testing uses an owner-controlled reviewed path, such as an explicit deployment workflow or the existing private `device-control` bridge. The deployed commit SHA must be observable as runtime evidence.
+
+## D-011: Product goal is a provisional working hypothesis
+
+Status: CONFIRMED
+
+The current service definition and primary scenarios are intentionally changeable. They guide the next design slice but are not treated as immutable requirements.
+
+Current hypothesis:
+
+> A NAS-hosted Secure Agent Platform that lets humans and bounded AI clients request incident investigation or security review, observe Agent progress/evidence, and explicitly approve high-impact actions through shared API/CLI/GUI surfaces.
+
+The hypothesis may be revised when the prototype, user-flow review, API design or actual runtime usage shows a clearer or more valuable service shape.
+
+The engineering goals remain durable even when product details change.
+
+## D-012: Static HTML prototype precedes new backend feature implementation
+
+Status: CONFIRMED
+
+For the next product slice, implementation order is:
+
+```text
+static HTML publishing prototype
+ -> screen / user-flow / capability review
+ -> confirm or revise product hypothesis
+ -> draft/finalize API contract for the accepted slice
+ -> backend implementation
+ -> CLI and GUI integration on the same API
+ -> NAS deployment and repeated human/AI verification
+```
+
+Rationale:
+
+- the finished service must be understandable before infrastructure and backend complexity grows;
+- the UI prototype exposes missing or unnecessary capabilities earlier than backend code;
+- API design should reflect accepted user actions rather than speculative endpoints;
+- the prototype provides a concrete artifact that humans, other AI agents and later implementation work can review consistently.
+
+The prototype uses static/mock data and must not require live credentials, provider calls or a database.
