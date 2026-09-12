@@ -12,6 +12,8 @@ Build a public production-like lab that demonstrates secure and observable AI Ag
 
 The Synology NAS is the planned shared integration/test runtime so humans and bounded AI test clients can exercise the system continuously through API, CLI and GUI while implementation progresses.
 
+The current product definition is a **changeable working hypothesis**. Before expanding a user-facing product slice, prefer `static HTML publishing prototype -> screen/function review -> API design -> backend implementation -> CLI/GUI integration -> NAS verification`.
+
 Do not describe lab results as real customer production experience.
 
 ## Read order
@@ -20,10 +22,11 @@ Do not describe lab results as real customer production experience.
 2. `CURRENT_STATE.md`
 3. `DECISIONS.md`
 4. `CONSTRAINTS.md`
-5. `docs/ARCHITECTURE.md`
-6. `docs/NAS_SHARED_RUNTIME_PLAN.md`
-7. `docs/SECURITY.md`
-8. relevant source and tests
+5. `docs/PRODUCT_PROTOTYPE_PLAN.md`
+6. `docs/ARCHITECTURE.md`
+7. `docs/NAS_SHARED_RUNTIME_PLAN.md`
+8. `docs/SECURITY.md`
+9. relevant source and tests
 
 ## Rules
 
@@ -34,6 +37,8 @@ Do not describe lab results as real customer production experience.
 - High-impact operations such as code mutation, deployment, secret access or destructive data changes must be approval-gated or denied.
 - Prefer read-only tools for the first vertical slice.
 - Do not add Redis, Kafka, Kubernetes or other infrastructure only to increase the technology list. Add them when a concrete reliability, scaling or architecture requirement exists.
+- Do not treat the current service concept, screen list, API list or Incident Investigation scenario as immutable; revise them when prototype/user/runtime evidence supports a better design.
+- For a new user-facing product slice, create/review the static HTML prototype before freezing the API contract or expanding backend code.
 - Every claimed capability requires source, test, runtime or benchmark evidence.
 - Incident exercises must be labelled `Incident Drill`, not production incidents.
 - Update `CURRENT_STATE.md` and durable decisions in the same change when implementation state or architecture materially changes.
@@ -43,8 +48,8 @@ Do not describe lab results as real customer production experience.
 
 - GitHub is the source of truth; the NAS is a deployment/integration runtime.
 - The initial NAS deployment uses Docker Compose. Do not block shared testing on Kubernetes.
-- REST/SSE is the canonical application contract.
-- Implement API behavior first, then expose the same behavior through `sapctl` CLI and the browser GUI.
+- After a product slice is accepted, REST/SSE is the canonical application contract for that slice.
+- Map accepted prototype actions to API operations first, then expose the same behavior through `sapctl` CLI and the browser GUI.
 - CLI and GUI must not bypass API authorization, read the application DB directly or maintain conflicting business logic.
 - Core user-facing capabilities are incomplete until the required API, CLI and GUI paths are verified.
 - Prefer deterministic machine-readable CLI/smoke output so other AI systems can test the runtime safely.
@@ -62,6 +67,8 @@ mypy src
 pytest
 docker build
 ```
+
+Prototype changes require desktop/mobile visual review plus a recorded screen/function review before API freeze.
 
 NAS-facing changes later also require, as applicable:
 
