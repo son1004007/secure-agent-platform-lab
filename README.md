@@ -86,12 +86,12 @@ delete_data     DENY
 ### Phase 0 - Baseline
 
 - [x] Public repository
-- [ ] FastAPI project skeleton
-- [ ] pytest / lint / type check
-- [ ] Docker image
-- [ ] GitHub Actions CI
-- [ ] `.env.example` and secret-safety baseline
-- [ ] architecture / security docs
+- [x] FastAPI project skeleton
+- [x] pytest / lint / type check
+- [x] Docker image
+- [x] GitHub Actions CI
+- [x] `.env.example` and secret-safety baseline
+- [x] architecture / security docs
 
 ### Phase 1 - Agents API minimal E2E
 
@@ -181,4 +181,4 @@ delete_data     DENY
 
 ## Status
 
-`Phase 0 - Baseline` 진행 중입니다.
+`Phase 0 - Baseline` 완료. 다음 목표는 `Phase 1 - Agents API minimal E2E`입니다.
