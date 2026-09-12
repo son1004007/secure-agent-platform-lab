@@ -4,6 +4,35 @@ OpenAI Agents API를 기반으로 AI Agent의 인증, 권한, Tool 통제, Human
 
 이 저장소의 목적은 실제 상용 운영 경험을 과장하는 것이 아니라, Production 환경에서 필요한 설계와 운영 문제를 재현하고 검증 가능한 코드와 문서로 남기는 것입니다.
 
+## Current product hypothesis
+
+현재 서비스 목표는 **변경 가능한 working hypothesis**입니다. 지금은 다음 형태를 기준으로 설계하지만, HTML 프로토타입 검토와 실제 사용 증거에 따라 서비스의 중심 시나리오와 화면/기능은 변경할 수 있습니다.
+
+> NAS에서 상시 실행되며, Web GUI 또는 CLI를 통해 AI Agent에게 장애 조사와 보안 검토를 요청하고, Agent의 진행 상태와 근거를 확인하며, 위험한 작업은 명시적으로 승인하는 Secure Agent 운영 플랫폼
+
+고정하는 것은 특정 화면이나 기능 목록이 아니라 다음 engineering goals입니다.
+
+- AI Backend와 Agent integration
+- identity, authorization, policy, Human Approval
+- observability와 incident response
+- performance/reliability evidence
+- Docker/NAS runtime과 이후 Kubernetes
+- API, CLI, GUI 및 machine client parity
+
+개발 순서는 다음처럼 운영합니다.
+
+```text
+완성형 정적 HTML 퍼블리싱 시안
+ -> 화면 / 사용자 흐름 / 기능 확정
+ -> 해당 slice의 API 설계
+ -> 실제 backend 구현
+ -> CLI / GUI를 동일 API에 연결
+ -> NAS 배포 및 사람 / AI 반복 테스트
+ -> 필요하면 product hypothesis 수정
+```
+
+상세 기준은 `docs/PRODUCT_PROTOTYPE_PLAN.md`를 참조합니다.
+
 ## Why this project
 
 주요 보완 목표는 다음과 같습니다.
@@ -29,7 +58,7 @@ REST / SSE API
    `-- bounded AI test client
 ```
 
-CLI와 GUI에 별도 비즈니스 로직을 만들지 않습니다. 기능은 `API first -> CLI -> GUI` 순서로 구현하며, 사용자 기능은 CLI와 GUI 양쪽에서 사용할 수 있어야 완료로 봅니다.
+GUI와 CLI에 별도 비즈니스 로직을 만들지 않습니다. 단, **무엇을 API로 만들지는 먼저 HTML 프로토타입에서 사용자 행동과 화면을 검토한 뒤 확정**합니다.
 
 ## Development and test runtime
 
@@ -56,6 +85,8 @@ Browser / sapctl / curl / AI test client
 자세한 계획은 `docs/NAS_SHARED_RUNTIME_PLAN.md`를 참조합니다.
 
 ## Target architecture
+
+현재 목표 아키텍처도 product hypothesis와 마찬가지로 검증을 통해 조정할 수 있습니다.
 
 ```text
 Web / CLI / API Client
@@ -95,9 +126,9 @@ This platform
   observability, reliability, deployment and incident response
 ```
 
-## Primary demo
+## Primary demo hypothesis
 
-첫 번째 실제 시나리오는 `Incident Investigation Agent`입니다.
+현재 첫 번째 핵심 사용 시나리오는 `Incident Investigation Agent`입니다.
 
 ```text
 사용자 요청
@@ -120,6 +151,8 @@ read_secret     DENY
 delete_data     DENY
 ```
 
+HTML 프로토타입을 통해 이 시나리오가 실제 서비스의 첫 화면과 사용자 흐름으로 충분히 이해되는지 먼저 검증합니다. 이해가 어렵거나 더 적절한 핵심 시나리오가 발견되면 구현 전에 변경합니다.
+
 ## Roadmap
 
 ### Phase 0 - Baseline
@@ -132,13 +165,32 @@ delete_data     DENY
 - [x] `.env.example` and secret-safety baseline
 - [x] architecture / security docs
 
+### Phase 0.25 - Product definition + HTML publishing prototype
+
+Backend 기능 확장보다 먼저 완성형 정적 HTML 시안을 만듭니다.
+
+- [ ] `prototype/` 정적 HTML/CSS/JS publishing artifact
+- [ ] desktop/mobile layout
+- [ ] Dashboard
+- [ ] Agent Sessions list/new/detail
+- [ ] Approvals
+- [ ] Incident history/drill
+- [ ] Security Review concept
+- [ ] System status
+- [ ] mock/sample data 명시
+- [ ] 화면/사용자 흐름/기능 review
+- [ ] 현재 product hypothesis 유지/수정 결정
+- [ ] 확정된 사용자 행동을 draft API contract에 mapping
+
 ### Phase 0.5 - NAS shared runtime + CLI/GUI baseline
+
+Phase 0.25에서 확정한 slice를 기준으로 실제 서비스를 만듭니다.
 
 - [ ] Synology Docker Compose integration runtime
 - [ ] PostgreSQL persistent lab state
-- [ ] `/api/v1` route baseline and version endpoint
-- [ ] `sapctl health` CLI
-- [ ] minimal browser dashboard/system status GUI
+- [ ] accepted screen actions에 대응하는 `/api/v1` baseline
+- [ ] `sapctl` CLI baseline
+- [ ] prototype을 기반으로 한 browser GUI baseline
 - [ ] deterministic HTTP smoke test for human/AI test clients
 - [ ] exact deployed Git SHA exposed as non-secret runtime metadata
 - [ ] safe NAS secret injection and deployment procedure
@@ -219,6 +271,8 @@ delete_data     DENY
 
 기능 추가 자체보다 아래 증거를 남기는 것을 완료 기준으로 사용합니다.
 
+- `docs/PRODUCT_PROTOTYPE_PLAN.md`
+- `prototype/`
 - `docs/ARCHITECTURE.md`
 - `docs/NAS_SHARED_RUNTIME_PLAN.md`
 - `docs/SECURITY.md`
@@ -231,6 +285,8 @@ delete_data     DENY
 
 ## Scope guardrails
 
+- 현재 product goal, primary scenario와 UI는 evidence에 따라 변경할 수 있습니다.
+- 이미 구현했다는 이유만으로 불필요한 기능을 유지하지 않습니다.
 - 실제 상용 운영 경험으로 표현하지 않습니다.
 - OpenAI API 동작은 구현 시점의 공식 문서를 기준으로 검증합니다.
 - Agent가 임의로 Secret을 읽거나 위험한 작업을 실행하도록 만들지 않습니다.
@@ -241,4 +297,4 @@ delete_data     DENY
 
 ## Status
 
-`Phase 0 - Baseline` 완료. 다음 목표는 `Phase 0.5 - NAS shared runtime + CLI/GUI baseline`, 이후 `Phase 1 - Agents API minimal E2E on NAS`입니다.
+`Phase 0 - Baseline` 완료. 다음 목표는 **`Phase 0.25 - Product definition + HTML publishing prototype`**입니다. 화면/기능 review 후 `Phase 0.5 - NAS shared runtime + API/CLI/GUI baseline`, 이후 `Phase 1 - Agents API minimal E2E on NAS`로 진행합니다.
