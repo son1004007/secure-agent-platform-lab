@@ -13,6 +13,7 @@ Last reviewed: 2026-09-12
 - `IMPLEMENTED`: GitHub Actions CI for lint, type check, tests and Docker build.
 - `IMPLEMENTED`: public secret-safety baseline with `.env.example` and `.gitignore`.
 - `IMPLEMENTED`: initial architecture and security documentation.
+- `CONFIRMED`: Phase 0 implementation commit `8c8156e6a589872ea37c59b63baed5ccb469935c` passed GitHub Actions run `34691384005`; Ruff, mypy, pytest and Docker build all succeeded.
 - `PLANNED`: OpenAI Agents API adapter and minimal session/event E2E.
 - `PLANNED`: PostgreSQL business/security metadata store.
 - `PLANNED`: JWT/OIDC, RBAC, Tool Policy and Human Approval.
@@ -22,18 +23,22 @@ Last reviewed: 2026-09-12
 
 ## Current milestone
 
-Phase 0 - Baseline.
+Phase 0 - Baseline: `COMPLETE`.
 
-Done criteria:
+Verified criteria:
 
 ```text
-FastAPI starts
-/health responds
-baseline tests pass
+FastAPI baseline exists
+/health contract test passes
 ruff passes
 mypy passes
+pytest passes
 Docker image builds
-CI proves the above on GitHub
+GitHub Actions provides public verification evidence
 ```
 
-Do not mark Phase 0 complete until CI evidence exists for the implementation commit.
+## Next milestone
+
+Phase 1 - Agents API minimal E2E.
+
+Before implementing provider-specific behavior, verify the current official OpenAI Agents API documentation and encode the external API behind a dedicated adapter with contract tests.
