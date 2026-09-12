@@ -10,6 +10,8 @@ This repository is the source of truth for `secure-agent-platform-lab` implement
 
 Build a public production-like lab that demonstrates secure and observable AI Agent platform engineering with FastAPI, OpenAI Agents API, security policy, incident response, performance testing and Kubernetes.
 
+The Synology NAS is the planned shared integration/test runtime so humans and bounded AI test clients can exercise the system continuously through API, CLI and GUI while implementation progresses.
+
 Do not describe lab results as real customer production experience.
 
 ## Read order
@@ -19,8 +21,9 @@ Do not describe lab results as real customer production experience.
 3. `DECISIONS.md`
 4. `CONSTRAINTS.md`
 5. `docs/ARCHITECTURE.md`
-6. `docs/SECURITY.md`
-7. relevant source and tests
+6. `docs/NAS_SHARED_RUNTIME_PLAN.md`
+7. `docs/SECURITY.md`
+8. relevant source and tests
 
 ## Rules
 
@@ -36,6 +39,19 @@ Do not describe lab results as real customer production experience.
 - Update `CURRENT_STATE.md` and durable decisions in the same change when implementation state or architecture materially changes.
 - Keep changes small, reviewable and independently testable.
 
+## NAS and client rules
+
+- GitHub is the source of truth; the NAS is a deployment/integration runtime.
+- The initial NAS deployment uses Docker Compose. Do not block shared testing on Kubernetes.
+- REST/SSE is the canonical application contract.
+- Implement API behavior first, then expose the same behavior through `sapctl` CLI and the browser GUI.
+- CLI and GUI must not bypass API authorization, read the application DB directly or maintain conflicting business logic.
+- Core user-facing capabilities are incomplete until the required API, CLI and GUI paths are verified.
+- Prefer deterministic machine-readable CLI/smoke output so other AI systems can test the runtime safely.
+- Before JWT/OIDC/RBAC exist, do not broadly expose the NAS service to the public Internet.
+- Do not run untrusted public/fork PR code automatically on the Synology self-hosted runner.
+- NAS remote deployment or AI runtime access must follow the reviewed private `device-control` trust boundary rather than introducing unrestricted SSH/shell interfaces here.
+
 ## Verification
 
 For behavior changes, run as applicable:
@@ -45,6 +61,16 @@ ruff check .
 mypy src
 pytest
 docker build
+```
+
+NAS-facing changes later also require, as applicable:
+
+```text
+Docker Compose config validation
+NAS API smoke
+sapctl smoke
+browser GUI smoke
+exact deployed Git SHA verification
 ```
 
 Later phases must add contract, load, security, Kubernetes and incident-drill verification rather than replacing these baseline checks.
