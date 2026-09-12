@@ -15,6 +15,8 @@ AI/automation test client
 
 All clients use the same FastAPI control-plane API. Business, security and policy logic must not be duplicated in the GUI or CLI.
 
+The **product goal and UI remain changeable**. Before expanding the NAS backend, the current service hypothesis is first expressed as a complete static HTML publishing prototype, reviewed, and then translated into an API contract for the accepted slice. See `PRODUCT_PROTOTYPE_PLAN.md`.
+
 ## Runtime topology
 
 ```text
@@ -55,26 +57,22 @@ Kubernetes is not required for the first NAS runtime. Docker Compose is used fir
 
 ### Browser GUI
 
-The first GUI should stay intentionally small and backend-focused.
+The implemented GUI should stay intentionally small and backend-focused unless the accepted prototype demonstrates a need for more frontend complexity.
 
-Minimum pages:
+The static prototype may include a wider set of screens to make the finished service understandable before implementation:
 
 ```text
 /dashboard
 /sessions
+/sessions/new
 /sessions/{id}
 /approvals
+/incidents
+/security-review
 /system
 ```
 
-Minimum capabilities:
-
-- health/runtime status
-- create Agent session
-- submit user input
-- watch normalized Agent events
-- inspect completion/error state
-- later inspect approval requests
+The prototype is static and uses mock/sample data. After review, only accepted capabilities become real API/GUI work.
 
 Use server-rendered HTML with lightweight JavaScript or HTMX first unless a separate SPA becomes justified. Frontend complexity is not a portfolio goal.
 
@@ -82,37 +80,35 @@ Use server-rendered HTML with lightweight JavaScript or HTMX first unless a sepa
 
 Provide a repository-owned CLI named `sapctl`.
 
-Initial commands:
+Candidate commands, finalized after prototype/API review:
 
 ```text
-sapctl health
+sapctl system status
 sapctl session create --message "..."
 sapctl session list
 sapctl session show <id>
 sapctl session watch <id>
-```
-
-Later commands:
-
-```text
 sapctl approval list
 sapctl approval approve <id>
-sapctl incident run <scenario>
-sapctl system status
+sapctl approval reject <id>
 ```
 
 The CLI must call the HTTP API. It must not read the PostgreSQL database directly or bypass authorization/policy rules.
 
 ### API
 
-Version the public application contract from the beginning.
+The API is versioned, but specific endpoints are frozen only after the corresponding prototype actions are accepted.
+
+Candidate mapping:
 
 ```text
-/api/v1/health
-/api/v1/sessions
-/api/v1/sessions/{id}
-/api/v1/sessions/{id}/events
-/api/v1/approvals
+GET  /api/v1/system/summary
+GET  /api/v1/sessions
+POST /api/v1/sessions
+GET  /api/v1/sessions/{id}
+GET  /api/v1/sessions/{id}/events
+GET  /api/v1/approvals
+POST /api/v1/approvals/{id}/decision
 ```
 
 Use SSE for one-way session/event streaming unless a verified requirement for WebSocket appears.
@@ -167,19 +163,44 @@ External access is considered only after:
 
 Status: complete.
 
+### Phase 0.25 - Product definition and HTML publishing prototype
+
+Goal: make the intended finished service understandable before expanding backend/runtime code.
+
+Tasks:
+
+- create static HTML/CSS/JS prototype under `prototype/`
+- represent Dashboard, Sessions, Session Detail, Approvals, Incidents, Security Review and System Status
+- support desktop and mobile layouts
+- use realistic but clearly marked mock/sample data
+- review the primary user flow and whether Incident Investigation remains the best first scenario
+- confirm or revise the current product hypothesis
+- remove unnecessary screens/actions before backend work
+- map accepted screen actions to a draft API contract
+
+Done when:
+
+```text
+prototype opens without backend services
+service purpose and main user flow are understandable
+prototype is usable on desktop and mobile
+screen/function review is recorded
+product hypothesis is confirmed or revised
+accepted actions are mapped to a draft API contract
+```
+
 ### Phase 0.5 - NAS shared runtime and client surfaces
 
-Goal: make every later phase continuously usable and testable on the NAS.
+Goal: implement only the accepted product slice and make later phases continuously usable/testable on the NAS.
 
 Tasks:
 
 - add Docker Compose integration stack for NAS
 - add deployment/run scripts that use generic configuration, not private addresses
 - add PostgreSQL container and persistent lab volume
-- add health/readiness endpoints
-- add `/api/v1` route baseline
-- implement `sapctl health`
-- implement minimal browser dashboard and system status page
+- implement the accepted `/api/v1` contract baseline
+- implement the initial `sapctl` commands mapped to that contract
+- convert the accepted static prototype into the first real browser GUI
 - add smoke test script usable by humans and AI runners
 - define exact commit/version endpoint
 - document safe NAS secret injection
@@ -189,9 +210,7 @@ Done when:
 
 ```text
 one reviewed Git commit is deployed on NAS
-browser can open dashboard and see health/version
-sapctl health reaches the same NAS API
-curl/API smoke test reaches the same NAS API
+browser, CLI and HTTP clients reach the same accepted capability slice
 runtime reports the exact deployed commit
 no secret is stored in Git or returned to clients
 ```
@@ -233,6 +252,8 @@ Done when CLI and GUI enforce the same authorization decisions.
 
 ### Phase 4 - Incident Investigation Agent
 
+If the prototype review still confirms it as the primary scenario:
+
 - sample service deployed alongside the platform
 - controlled fault injection
 - read-only log/metric/deployment tools
@@ -268,33 +289,24 @@ Kafka is added only after asynchronous consumers, replay or backlog handling is 
 
 ### Phase 8 - Security Review Agent
 
-Add repository/container/Kubernetes security review with approval-gated mutation.
+Add repository/container/Kubernetes security review with approval-gated mutation when the product flow and evidence justify it.
 
 ## Interface parity rule
 
-Every user-facing capability must have one canonical API operation first.
+Every accepted user-facing capability gets one canonical API operation first, then CLI and GUI clients share it.
 
 ```text
-API first
+accepted prototype action
+  -> API contract
   -> CLI client
-  -> GUI client
+  -> GUI implementation
 ```
 
 A feature is not complete when it exists only in the GUI or only in the CLI.
 
-For each capability, maintain a parity table in release/verification notes:
-
-| Capability | API | CLI | GUI |
-|---|---|---|---|
-| Health/version | required | required | required |
-| Create session | required | required | required |
-| Watch events | required | required | required |
-| Approval | later | later | later |
-| Incident drill | later | later | later |
-
 ## Testing strategy
 
-Each deployment should support four levels of testing.
+Each implemented deployment should support four levels of testing.
 
 ```text
 1. CI unit/contract tests
@@ -303,10 +315,15 @@ Each deployment should support four levels of testing.
 4. Human/AI exploratory test through CLI and GUI
 ```
 
+Phase 0.25 additionally requires static prototype review before runtime tests begin.
+
 AI-oriented smoke commands must be deterministic and bounded. They should return machine-readable JSON where possible and avoid interactive prompts by default.
 
 ## Evidence to retain
 
+- static HTML prototype and review record
+- product hypothesis confirmation/revision decision
+- accepted screen-to-API mapping
 - exact deployed Git SHA
 - CI run
 - Compose validation
@@ -320,6 +337,8 @@ AI-oriented smoke commands must be deterministic and bounded. They should return
 
 ## Non-goals
 
+- treating the initial product hypothesis as immutable
+- writing backend features before the relevant user flow is understood
 - using the NAS working tree as the primary code-editing source
 - exposing an unrestricted shell to GUI/CLI/AI clients
 - publicly exposing an unauthenticated Agent control plane
