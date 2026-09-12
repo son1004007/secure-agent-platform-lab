@@ -19,8 +19,12 @@ Last reviewed: 2026-09-13
 - `CONFIRMED`: Synology NAS is the planned always-available integration/test runtime while GitHub remains the source of truth.
 - `CONFIRMED`: the initial NAS runtime will use Docker Compose; Kubernetes is a later second deployment target.
 - `CONFIRMED`: accepted user-facing capabilities must ultimately use one canonical REST/SSE API and be usable from both `sapctl` CLI and a browser GUI.
-- `PLANNED`: Phase 0.25 static HTML publishing prototype under `prototype/` with desktop/mobile layouts and realistic mock data.
-- `PLANNED`: review Dashboard, Sessions, Session Detail, Approvals, Incident history, Security Review and System Status before freezing the next API slice.
+- `IMPLEMENTED`: Phase 0.25 static HTML publishing prototype under `prototype/`.
+- `IMPLEMENTED`: prototype includes Dashboard, Sessions, New Agent Task, Session Detail, Approvals, Incident Drills, Security Review and System Status screens.
+- `IMPLEMENTED`: shared responsive CSS and lightweight JavaScript provide desktop/mobile layouts, navigation, sample task flow and non-operative approval interactions.
+- `IMPLEMENTED`: all prototype incidents, metrics, findings and identifiers are explicitly mock/sample data; no backend, provider credential or NAS runtime is required.
+- `PENDING_REVIEW`: owner screen/function review, product-hypothesis confirmation/revision and accepted action list.
+- `PLANNED`: draft `/api/v1` contract only after owner prototype review.
 - `PLANNED`: Phase 0.5 NAS shared runtime, PostgreSQL, accepted `/api/v1` contract, CLI and GUI baseline after prototype review.
 - `PLANNED`: bounded NAS deployment/test onboarding through the private `device-control` bridge or another reviewed owner-controlled path.
 - `PLANNED`: OpenAI Agents API adapter and minimal session/event E2E on the NAS.
@@ -47,39 +51,42 @@ GitHub Actions provides public verification evidence
 
 ## Current milestone
 
-Phase 0.25 - Product definition + HTML publishing prototype.
+Phase 0.25 - Product definition + HTML publishing prototype: `IMPLEMENTED, OWNER REVIEW PENDING`.
 
-Goal:
+Prototype files:
 
 ```text
-current product hypothesis
- -> realistic static HTML screens
- -> desktop/mobile review
- -> user flow and capability review
- -> confirm or revise product hypothesis
- -> map accepted actions to a draft API contract
+prototype/index.html
+prototype/sessions.html
+prototype/session-new.html
+prototype/session-detail.html
+prototype/approvals.html
+prototype/incidents.html
+prototype/security-review.html
+prototype/system.html
+prototype/assets/css/app.css
+prototype/assets/js/app.js
+prototype/README.md
 ```
 
-Planned prototype screens:
+Current review flow:
 
 ```text
-Dashboard
-Agent Sessions list
-New Agent task
-Session Detail / timeline / evidence / findings
-Approvals
-Incident Drill history
-Security Review concept
-System Status
+open prototype
+ -> inspect Dashboard and Session Detail first
+ -> walk New Task -> Session Detail -> Approval
+ -> inspect Incident / Security / System screens
+ -> review desktop and mobile usability
+ -> remove/add/reorder capabilities
+ -> confirm or revise current service goal
+ -> only then draft the accepted API contract
 ```
 
-Done criteria:
+Remaining Phase 0.25 done criteria:
 
 ```text
-prototype opens without backend services
+owner reviews the prototype
 current service purpose is understandable from the UI
-primary user flow is visible end to end
-mock/sample data is clearly marked
 screen/function review is recorded
 product hypothesis is explicitly confirmed or revised
 accepted UI actions are mapped to a draft API contract
