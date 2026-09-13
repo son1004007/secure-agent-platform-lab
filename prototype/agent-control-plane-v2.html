@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Control Plane Prototype v2</title>
+<style>
+:root{--bg:#f5f7fa;--p:#fff;--t:#161616;--m:#667085;--l:#d9dee7;--b:#0f62fe;--ok:#198038;--w:#b28600;--d:#da1e28;--s:#161616}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--t)}
+button,input,textarea,select{font:inherit}.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+aside{background:var(--s);color:white;padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}.brand{font-weight:800;padding:7px 10px 20px}
+nav{display:grid;gap:4px}.nav{border:0;background:transparent;color:#c6c6c6;text-align:left;padding:11px 12px;border-radius:8px}.nav:hover,.nav.active{background:#2b2b2b;color:white}
+aside small{margin-top:auto;color:#a8a8a8;padding:10px;line-height:1.5}.main{min-width:0}.top{height:62px;background:#fff;border-bottom:1px solid var(--l);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:5}.top b{font-size:18px}.mock{margin-left:auto;font-size:11px;background:#fff8d6;border:1px solid #f1c21b;padding:5px 8px;border-radius:999px;font-weight:800}
+.menu{display:none}.content{max-width:1400px;margin:auto;padding:28px 30px 50px}.view{display:none}.view.active{display:block}
+.hero{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:22px}.hero h1{margin:0 0 7px;font-size:clamp(28px,3vw,40px)}.hero p{margin:0;color:var(--m);line-height:1.6;max-width:850px}
+.btn{border:1px solid var(--l);background:#fff;padding:9px 12px;border-radius:8px;font-weight:800;cursor:pointer}.btn.primary{background:var(--b);border-color:var(--b);color:#fff}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(4,1fr);margin-bottom:16px}.two{grid-template-columns:minmax(0,1.5fr) minmax(300px,.8fr)}.agents{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--p);border:1px solid var(--l);border-radius:12px;box-shadow:0 8px 22px rgba(16,24,40,.06)}.head{padding:17px 19px 10px}.head h2{margin:0;font-size:16px}.body{padding:6px 19px 19px}.k{padding:17px}.label{font-size:13px;color:var(--m)}.value{font-size:27px;font-weight:800;margin-top:8px}.sub{font-size:12px;color:var(--m);margin-top:7px}
+.badge{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:#eee}.badge:before{content:"";width:7px;height:7px;border-radius:50%;background:#888}.ok{background:#defbe6;color:#0e6027}.ok:before{background:var(--ok)}.run{background:#edf5ff;color:#0043ce}.run:before{background:var(--b)}.warn{background:#fcf4d6;color:#684e00}.warn:before{background:var(--w)}
+table{width:100%;border-collapse:collapse;min-width:680px}.table{overflow:auto}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--l);font-size:14px}th{font-size:12px;color:var(--m);background:#fafafa}.link{color:#0043ce;font-weight:800;cursor:pointer}
+.agent{padding:17px}.agent h3{margin:10px 0 6px}.agent p{font-size:13px;color:var(--m);line-height:1.55}.icon{width:40px;height:40px;border-radius:10px;background:#edf5ff;color:#0043ce;display:grid;place-items:center;font-weight:900}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}.tag{font-size:11px;border:1px solid var(--l);padding:4px 6px;border-radius:6px}.request textarea{width:100%;min-height:130px;border:1px solid #aeb7c2;border-radius:9px;padding:12px;resize:vertical}
+.callout{border-left:4px solid var(--b);background:#edf5ff;padding:13px 15px;border-radius:0 9px 9px 0;line-height:1.55}.approval{border-left:5px solid var(--w)}
+.policyrow,.toolrow{display:grid;grid-template-columns:150px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--l)}.policy{font-size:12px;font-weight:900}.allow{color:var(--ok)}.approve{color:#8a6d00}.deny{color:var(--d)}
+.timeline{position:relative;margin-left:6px}.timeline:before{content:"";position:absolute;left:7px;top:7px;bottom:7px;width:2px;background:var(--l)}.step{position:relative;padding:0 0 20px 34px}.dot{position:absolute;left:0;top:2px;width:16px;height:16px;border-radius:50%;border:4px solid var(--ok);background:white}.step.active .dot{border-color:var(--b)}.step b{display:block}.small{font-size:12px;color:var(--m);line-height:1.55}
+.chat{display:grid;gap:10px}.bubble{max-width:85%;padding:12px 14px;border-radius:12px;line-height:1.55}.user{margin-left:auto;background:#d0e2ff}.agentmsg{background:#f4f4f4}
+.toast{position:fixed;right:18px;bottom:18px;background:#161616;color:white;padding:12px 14px;border-radius:9px;opacity:0;transition:.2s}.toast.show{opacity:1}
+@media(max-width:1050px){.kpis,.agents{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}aside{position:fixed;left:-255px;width:245px;z-index:10;transition:.2s}aside.open{left:0}.menu{display:block;margin-right:10px}.content{padding:18px 13px 40px}.top{padding:0 13px}.hero{display:grid}.agents{grid-template-columns:1fr}.policyrow,.toolrow{grid-template-columns:1fr}.bubble{max-width:95%}}
+@media(max-width:420px){.kpis{grid-template-columns:1fr}}
+</style>
+</head><body>
+<div class="app">
+<aside id="side"><div class="brand">Agent Control Plane</div><nav>
+<button class="nav active" data-v="dashboard">Dashboard</button>
+<button class="nav" data-v="agents">Agents</button>
+<button class="nav" data-v="runs">Runs</button>
+<button class="nav" data-v="approvals">Approvals</button>
+<button class="nav" data-v="tools">Tools & Policies</button>
+<button class="nav" data-v="observability">Observability</button>
+<button class="nav" data-v="system">System</button>
+</nav><small>Prototype v2<br>Agent-centric<br>Mock data only</small></aside>
+<main class="main"><header class="top"><button class="menu" id="menu">☰</button><b id="title">Dashboard</b><span class="mock">STATIC PROTOTYPE</span></header><div class="content">
+
+<section class="view active" id="dashboard">
+<div class="hero"><div><h1>여러 AI Agent를 한 곳에서 운영합니다.</h1><p>Agent를 선택해 직접 요청하고, 실행 상태와 Tool 사용을 확인하며, 위험한 작업은 사람이 승인하는 Agent 운영 플랫폼입니다.</p></div><div class="actions"><button class="btn primary" data-v="agents">Agent에게 요청</button><button class="btn" data-v="approvals">승인 요청</button></div></div>
+<div class="grid kpis">
+<div class="card k"><div class="label">Registered Agents</div><div class="value">4</div><div class="sub">Incident / Security / Code / Ops</div></div>
+<div class="card k"><div class="label">Running</div><div class="value">2</div><div class="sub"><span class="badge run">실행 중</span></div></div>
+<div class="card k"><div class="label">Approval Waiting</div><div class="value">1</div><div class="sub"><span class="badge warn">결정 필요</span></div></div>
+<div class="card k"><div class="label">Tool Calls / 24h</div><div class="value">38</div><div class="sub">샘플</div></div>
+</div>
+<div class="grid two">
+<div class="card"><div class="head"><h2>Agents</h2></div><div class="body table"><table><tr><th>Agent</th><th>역할</th><th>권한</th><th>상태</th></tr>
+<tr><td><span class="link" data-agent="incident">Incident Investigator</span></td><td>장애 원인 조사</td><td>Read + Approval</td><td><span class="badge ok">Ready</span></td></tr>
+<tr><td><span class="link" data-agent="security">Security Reviewer</span></td><td>보안 구성 검토</td><td>Read Only</td><td><span class="badge ok">Ready</span></td></tr>
+<tr><td><span class="link" data-agent="code">Code Reviewer</span></td><td>코드 변경 검토</td><td>Read Only</td><td><span class="badge ok">Ready</span></td></tr>
+<tr><td><span class="link" data-agent="ops">Ops Assistant</span></td><td>운영 상태 점검</td><td>Read + Approval</td><td><span class="badge warn">Limited</span></td></tr>
+</table></div></div>
+<div class="card approval"><div class="head"><h2>Pending Approval</h2></div><div class="body"><b>sample-service 재시작</b><p class="small">Incident Investigator가 후속 조치로 요청했습니다.</p><p class="policy approve">APPROVAL_REQUIRED</p><button class="btn primary" data-v="approvals">근거 확인</button></div></div>
+</div></section>
+
+<section class="view" id="agents"><div class="hero"><div><h1>Agents</h1><p>Agent를 선택하면 역할과 Tool 정책을 확인하고 바로 요청할 수 있습니다.</p></div></div>
+<div class="grid agents">
+<div class="card agent"><div class="icon">IN</div><h3>Incident Investigator</h3><p>Metrics, Logs, Deployment, Dependency를 조사해 장애 원인을 찾습니다.</p><div class="tags"><span class="tag">read_metrics</span><span class="tag">read_logs</span></div><button class="btn primary" data-agent="incident">열기 / 요청하기</button></div>
+<div class="card agent"><div class="icon">SR</div><h3>Security Reviewer</h3><p>Repository, Dockerfile, Kubernetes, 인증/인가 구성을 검토합니다.</p><div class="tags"><span class="tag">read_repo</span><span class="tag">scan_config</span></div><button class="btn primary" data-agent="security">열기 / 요청하기</button></div>
+<div class="card agent"><div class="icon">CR</div><h3>Code Reviewer</h3><p>변경 코드와 테스트를 읽고 회귀와 누락을 검토합니다.</p><div class="tags"><span class="tag">git_diff</span><span class="tag">read_tests</span></div><button class="btn primary" data-agent="code">열기 / 요청하기</button></div>
+<div class="card agent"><div class="icon">OP</div><h3>Ops Assistant</h3><p>서비스 상태와 배포 이력을 점검하고 운영 조치를 제안합니다.</p><div class="tags"><span class="tag">status</span><span class="tag">deployment</span></div><button class="btn primary" data-agent="ops">열기 / 요청하기</button></div>
+</div></section>
+
+<section class="view" id="agentDetail"><div class="hero"><div><h1 id="agentName">Incident Investigator</h1><p id="agentDesc">장애 원인을 운영 정보로 조사합니다.</p></div><span class="badge ok">Ready</span></div>
+<div class="grid two"><div class="card"><div class="head"><h2>Agent에게 요청</h2></div><div class="body request">
+<textarea id="request">최근 30분 동안 API 5xx가 증가한 원인을 조사하고 대응안을 정리해줘.</textarea>
+<div class="actions" style="margin-top:10px"><button class="btn primary" id="run">Run Agent</button><button class="btn" id="clear">Clear</button></div>
+<p class="small">실제 구현 시 이 요청은 Web GUI, REST API, sapctl CLI에서 동일하게 실행됩니다.</p></div></div>
+<div class="card"><div class="head"><h2>Agent Policy</h2></div><div class="body" id="policy">
+<div class="policyrow"><code>read_metrics</code><span>Metrics 조회</span><span class="policy allow">ALLOW</span></div>
+<div class="policyrow"><code>read_logs</code><span>Log 조회</span><span class="policy allow">ALLOW</span></div>
+<div class="policyrow"><code>restart_service</code><span>서비스 재시작</span><span class="policy approve">APPROVAL</span></div>
+<div class="policyrow"><code>read_secret</code><span>Secret 조회</span><span class="policy deny">DENY</span></div>
+</div></div></div>
+<div class="card" style="margin-top:16px"><div class="head"><h2>최근 요청</h2></div><div class="body chat"><div class="bubble user">최근 30분 동안 5xx 증가 원인을 조사해줘.</div><div class="bubble agentmsg">조사를 시작했습니다. Metrics → Logs → Deployment → Dependency 순서로 확인합니다.</div></div></div>
+</section>
+
+<section class="view" id="runs"><div class="hero"><div><h1>Runs</h1><p>모든 Agent 실행을 요청, 상태, Tool 호출, 결과 기준으로 추적합니다.</p></div><button class="btn primary" data-v="agents">새 Run</button></div>
+<div class="card"><div class="head"><h2>Recent Runs</h2></div><div class="body table"><table><tr><th>Run</th><th>Agent</th><th>Request</th><th>Status</th><th>Tool Calls</th><th>Result</th></tr>
+<tr><td><span class="link" data-v="runDetail">run_demo_1042</span></td><td>Incident Investigator</td><td>API 5xx 원인 조사</td><td><span class="badge run">RUNNING</span></td><td>4</td><td>DB pool 포화 의심</td></tr>
+<tr><td>run_demo_1041</td><td>Security Reviewer</td><td>배포 설정 검토</td><td><span class="badge ok">DONE</span></td><td>6</td><td>2 findings</td></tr>
+</table></div></div></section>
+
+<section class="view" id="runDetail"><div class="hero"><div><h1>Run #1042</h1><p>Incident Investigator · <span class="badge run">RUNNING</span></p></div><button class="btn primary" data-v="approvals">승인 요청 1</button></div>
+<div class="grid two"><div class="card"><div class="head"><h2>요청 / Timeline</h2></div><div class="body">
+<div class="callout" style="margin-bottom:16px"><b>User request</b><br>최근 30분 동안 API 5xx가 증가한 원인을 조사하고 대응안을 정리해줘.</div>
+<div class="timeline"><div class="step"><span class="dot"></span><b>read_metrics 완료</b><span class="small">5xx, P95, DB pool 조회</span></div><div class="step"><span class="dot"></span><b>read_logs 완료</b><span class="small">DB timeout 패턴 확인</span></div><div class="step"><span class="dot"></span><b>read_deployment 완료</b><span class="small">최근 배포 확인</span></div><div class="step active"><span class="dot"></span><b>dependency_check 진행 중</b><span class="small">PostgreSQL 확인</span></div></div></div></div>
+<div class="card"><div class="head"><h2>Tool Calls</h2></div><div class="body"><div class="toolrow"><code>read_metrics</code><span>P95 / Error / DB pool</span><span class="badge ok">DONE</span></div><div class="toolrow"><code>read_logs</code><span>timeout pattern</span><span class="badge ok">DONE</span></div><div class="toolrow"><code>read_deployment</code><span>release state</span><span class="badge ok">DONE</span></div><div class="toolrow"><code>dependency_check</code><span>PostgreSQL</span><span class="badge run">RUNNING</span></div></div></div></div>
+<div class="grid two" style="margin-top:16px"><div class="card"><div class="head"><h2>Result</h2></div><div class="body"><div class="callout"><b>Finding</b><br>DB connection pool 포화가 주요 원인으로 보입니다.</div></div></div>
+<div class="card approval"><div class="head"><h2>Recommended Action</h2></div><div class="body"><b>sample-service 재시작 후 회복 검증</b><p class="policy approve">APPROVAL_REQUIRED</p><button class="btn primary" data-v="approvals">승인 여부 결정</button></div></div></div>
+</section>
+
+<section class="view" id="approvals"><div class="hero"><div><h1>Approvals</h1><p>Agent가 요청한 영향 작업을 사람이 결정합니다.</p></div></div>
+<div class="card approval"><div class="head"><h2>sample-service 재시작</h2></div><div class="body"><p><b>Requested by</b><br>Incident Investigator / run_demo_1042</p><p><b>Evidence</b><br>DB pool 96%, timeout 42건, P95 3.2s (모두 샘플)</p><p class="policy approve">APPROVAL_REQUIRED</p><div class="actions"><button class="btn primary" id="approveBtn">Approve</button><button class="btn" id="rejectBtn">Reject</button><span id="decision" class="badge warn">WAITING</span></div></div></div></section>
+
+<section class="view" id="tools"><div class="hero"><div><h1>Tools & Policies</h1><p>Agent별 Tool 사용 권한을 ALLOW, APPROVAL_REQUIRED, DENY로 관리합니다.</p></div></div>
+<div class="card"><div class="head"><h2>Incident Investigator</h2></div><div class="body">
+<div class="policyrow"><code>read_metrics</code><span>Metrics 조회</span><span class="policy allow">ALLOW</span></div>
+<div class="policyrow"><code>read_logs</code><span>Log 조회</span><span class="policy allow">ALLOW</span></div>
+<div class="policyrow"><code>restart_service</code><span>서비스 재시작</span><span class="policy approve">APPROVAL_REQUIRED</span></div>
+<div class="policyrow"><code>deploy</code><span>배포</span><span class="policy approve">APPROVAL_REQUIRED</span></div>
+<div class="policyrow"><code>read_secret</code><span>Secret 조회</span><span class="policy deny">DENY</span></div>
+</div></div></section>
+
+<section class="view" id="observability"><div class="hero"><div><h1>Observability</h1><p>Agent와 Tool 실행을 운영 관점에서 추적하는 개념 화면입니다.</p></div></div>
+<div class="grid kpis"><div class="card k"><div class="label">Agent Completion</div><div class="value">94%</div><div class="sub">sample</div></div><div class="card k"><div class="label">Tool Failure</div><div class="value">2.6%</div><div class="sub">sample</div></div><div class="card k"><div class="label">P95 Run</div><div class="value">38s</div><div class="sub">sample</div></div><div class="card k"><div class="label">Approval Wait</div><div class="value">3m</div><div class="sub">sample</div></div></div></section>
+
+<section class="view" id="system"><div class="hero"><div><h1>System</h1><p>Control Plane, Database, Agent Provider, 배포 상태를 확인합니다.</p></div></div>
+<div class="grid kpis"><div class="card k"><div class="label">Control API</div><div class="value">UP</div><div class="sub">prototype</div></div><div class="card k"><div class="label">PostgreSQL</div><div class="value">NEXT</div><div class="sub">Phase 0.5</div></div><div class="card k"><div class="label">Agent Provider</div><div class="value">MOCK</div><div class="sub">Agents API later</div></div><div class="card k"><div class="label">Runtime</div><div class="value">HTML</div><div class="sub">v2</div></div></div></section>
+
+</div></main></div><div class="toast" id="toast"></div>
+<script>
+const titles={dashboard:"Dashboard",agents:"Agents",agentDetail:"Agent Detail",runs:"Runs",runDetail:"Run Detail",approvals:"Approvals",tools:"Tools & Policies",observability:"Observability",system:"System"};
+const side=document.getElementById("side"),toast=document.getElementById("toast");
+function show(id){document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.v===id||(id==="agentDetail"&&x.dataset.v==="agents")||(id==="runDetail"&&x.dataset.v==="runs")));document.getElementById("title").textContent=titles[id];side.classList.remove("open");window.scrollTo(0,0)}
+document.querySelectorAll("[data-v]").forEach(x=>x.onclick=()=>show(x.dataset.v));document.getElementById("menu").onclick=()=>side.classList.toggle("open");
+const A={incident:["Incident Investigator","Metrics, Logs, Deployment, Dependency를 조사해 장애 원인과 대응안을 제시합니다.","최근 30분 동안 API 5xx가 증가한 원인을 조사하고 대응안을 정리해줘.",[["read_metrics","Metrics 조회","ALLOW"],["read_logs","Log 조회","ALLOW"],["restart_service","서비스 재시작","APPROVAL"],["read_secret","Secret 조회","DENY"]]],security:["Security Reviewer","Repository와 배포 구성을 읽기 전용으로 검토합니다.","이 Repository의 Dockerfile, 인증/인가 설정, Secret 노출 위험을 검토해줘.",[["read_repo","Repository 읽기","ALLOW"],["scan_config","설정 검토","ALLOW"],["change_code","코드 변경","APPROVAL"],["read_secret","Secret 조회","DENY"]]],code:["Code Reviewer","변경 코드와 테스트를 검토합니다.","최근 변경사항을 검토하고 blocker와 테스트 누락을 정리해줘.",[["git_diff","Diff 읽기","ALLOW"],["read_tests","Test 읽기","ALLOW"],["write_code","코드 수정","APPROVAL"],["merge","Merge","DENY"]]],ops:["Ops Assistant","서비스 상태와 배포 이력을 점검합니다.","현재 서비스 상태를 점검하고 주의가 필요한 항목을 정리해줘.",[["status","상태 조회","ALLOW"],["deployment","배포 조회","ALLOW"],["restart_service","서비스 재시작","APPROVAL"],["delete_data","데이터 삭제","DENY"]]]};
+document.querySelectorAll("[data-agent]").forEach(x=>x.onclick=()=>{let a=A[x.dataset.agent];document.getElementById("agentName").textContent=a[0];document.getElementById("agentDesc").textContent=a[1];document.getElementById("request").value=a[2];document.getElementById("policy").innerHTML=a[3].map(p=>`<div class="policyrow"><code>${p[0]}</code><span>${p[1]}</span><span class="policy ${p[2]==="ALLOW"?"allow":p[2]==="DENY"?"deny":"approve"}">${p[2]}</span></div>`).join("");show("agentDetail")});
+function pop(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2200)}
+document.getElementById("run").onclick=()=>{pop("샘플 Run 생성. 실제 Agent API는 호출하지 않습니다.");setTimeout(()=>show("runDetail"),300)};document.getElementById("clear").onclick=()=>document.getElementById("request").value="";
+document.getElementById("approveBtn").onclick=()=>{let d=document.getElementById("decision");d.className="badge ok";d.textContent="APPROVED";pop("샘플 승인 완료")};document.getElementById("rejectBtn").onclick=()=>{let d=document.getElementById("decision");d.className="badge";d.textContent="REJECTED";pop("샘플 거부 완료")};
+</script></body></html>
